@@ -310,18 +310,14 @@ class ThemeParksSync:
     
     def __init__(self):
         self._client = ThemeParksClient()
-        self._loop = None
-    
-    def _get_loop(self):
-        """Get or create event loop"""
-        if self._loop is None or self._loop.is_closed():
-            try:
-                self._loop = asyncio.get_event_loop()
-            except RuntimeError:
-                self._loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(self._loop)
-        return self._loop
-    
+
+    def _run_async(self, coro):
+        """Run async coroutine safely, works even with Kivy's event loop"""
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(asyncio.run, coro)
+            return future.result(timeout=30)
+
     def get_live_data(self, park_name: str, operating_only: bool = False) -> Dict[str, Optional[int]]:
         """
         Get live wait times for a park
@@ -333,7 +329,6 @@ class ThemeParksSync:
         Returns:
             Dict mapping attraction names to wait times
         """
-        loop = self._get_loop()
         park_id = self._client.get_park_id(park_name)
 
         if not park_id:
@@ -341,9 +336,7 @@ class ThemeParksSync:
             return {}
 
         try:
-            park = loop.run_until_complete(
-                self._client.get_live_data(park_id)
-            )
+            park = self._run_async(self._client.get_live_data(park_id))
 
             if operating_only:
                 return {
@@ -359,27 +352,28 @@ class ThemeParksSync:
         except Exception as e:
             logger.error(f"Failed to fetch data: {e}")
             return {}
-    
+
     def get_wait_time(self, park_name: str, attraction_name: str) -> Optional[int]:
         """Get wait time for a specific attraction"""
-        loop = self._get_loop()
         park_id = self._client.get_park_id(park_name)
-        
+
         if not park_id:
             return None
-        
+
         try:
-            return loop.run_until_complete(
+            return self._run_async(
                 self._client.get_wait_time(park_id, attraction_name)
             )
         except Exception as e:
             logger.error(f"Failed to fetch wait time: {e}")
             return None
-    
+
     def close(self):
         """Clean up resources"""
-        if self._loop and not self._loop.is_closed():
-            self._loop.run_until_complete(self._client.close())
+        try:
+            self._run_async(self._client.close())
+        except Exception:
+            pass
 
 
 # Example usage
