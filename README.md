@@ -2,7 +2,7 @@
 
 A Kivy-based touchscreen application for Raspberry Pi that displays real-time wait times from Disney theme parks using the themeparks.wiki API.
 
-![Display Example](screenshot.png)
+![Display Example](assets/screenshot.png)
 
 ## Features
 
@@ -217,7 +217,7 @@ SCANNER_GREEN = (0.2, 0.9, 0.3, 1)
 
 ## License
 
-This project is for personal/educational use. 
+This project is for personal/educational use.
 
 - themeparks.wiki API: Check their terms of service
 - Disney trademarks: Property of The Walt Disney Company
