@@ -1,0 +1,22 @@
+# Disney Wait Time Display - Dependencies
+
+# Core Kivy framework
+kivy>=2.2.0
+
+# For async API calls
+aiohttp>=3.8.0
+
+# For running async in sync context (Kivy integration)
+asyncio
+
+# Optional: For better fonts
+# kivy-garden.iconfonts
+
+# Raspberry Pi specific (uncomment for Pi deployment)
+# RPi.GPIO
+# kivy[rpi]
+
+# Development tools
+# pytest
+# black
+# flake8
